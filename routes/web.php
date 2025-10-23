@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CarServiceController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [CarServiceController::class, 'index']);
+Route::post('/search-client', [CarServiceController::class, 'searchClient']);
+Route::get('/client/{id}/cars', [CarServiceController::class, 'getClientCars']);
+Route::get('/car/{id}/services', [CarServiceController::class, 'getCarServices']);
