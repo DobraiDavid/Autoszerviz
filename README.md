@@ -21,7 +21,7 @@
 5. Generáld le az alkalmazás kulcsát:<br>
     docker compose exec app php artisan key:generate<br>
 6. Futtasd le az adatbázis migrációkat:<br>
-    docker compose exec app php artisan migrate<br>
+    docker compose exec app php artisan migrate -seed<br>
 7. Telepítsd és buildeld a frontendet:<br>
     npm install<br>
     npm run build<br>
