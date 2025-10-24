@@ -18,6 +18,6 @@ class Client extends Model
 
     public function services()
     {
-        return $this->hasManyThrough(Service::class, Car::class);
+        return $this->hasMany(Service::class, 'client_id');
     }
 }

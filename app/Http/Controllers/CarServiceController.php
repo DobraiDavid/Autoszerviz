@@ -64,11 +64,18 @@ class CarServiceController extends Controller
 
     public function getClientCars($id)
     {
+        $sorszam = 0;
+
         $cars = Car::where('client_id', $id)
             ->orderBy('id')
             ->get()
-            ->map(function ($car) {
-                $last = $car->services()->orderByDesc('log_number')->first();
+            ->map(function ($car) use (&$sorszam) {
+                $sorszam++;
+
+                $last = Service::where('client_id', $car->client_id)
+                    ->where('car_id', $sorszam)
+                    ->orderByDesc('log_number')
+                    ->first();
 
                 $lastEvent = $last?->event;
                 $lastEventTime = $last?->event_time;
@@ -80,7 +87,7 @@ class CarServiceController extends Controller
                 return [
                     'id' => $car->id,
                     'client_id' => $car->client_id,
-                    'car_id' => $car->id,
+                    'car_sorszam' => $sorszam,
                     'type' => $car->type,
                     'registered' => $car->registered,
                     'ownbrand' => (int) $car->ownbrand,
@@ -96,27 +103,37 @@ class CarServiceController extends Controller
         return response()->json($cars);
     }
 
-    public function getCarServices($id)
+    public function getCarServices($clientId, $carSorszam)
     {
-        $car = Car::find($id);
-        if (!$car) {
-            return response()->json(['error' => 'Car not found'], 404);
+        $services = Service::where('client_id', $clientId)
+            ->where('car_id', $carSorszam)
+            ->orderBy('log_number')
+            ->get();
+
+        if ($services->isEmpty()) {
+            return response()->json([]);
         }
 
-        $services = Service::where('car_id', $car->id)
-            ->orderBy('log_number')
-            ->get()
-            ->map(function ($s) use ($car) {
-                $eventTime = $s->event_time ?: ($s->event === 'regisztralt' ? $car->registered : null);
+        $car = Car::where('client_id', $clientId)
+            ->orderBy('id')
+            ->skip($carSorszam - 1)
+            ->first();
 
-                return [
-                    'log_number' => (int) $s->log_number,
-                    'event' => $s->event,
-                    'event_time' => $eventTime,
-                    'document_id' => $s->document_id,
-                ];
-            });
+        $result = $services->map(function ($s) use ($car) {
+            $eventTime = $s->event_time;
 
-        return response()->json($services);
+            if ($s->event === 'regisztralt' && empty($eventTime) && $car) {
+                $eventTime = $car->registered;
+            }
+
+            return [
+                'log_number' => (int) $s->log_number,
+                'event' => $s->event,
+                'event_time' => $eventTime,
+                'document_id' => $s->document_id,
+            ];
+        });
+
+        return response()->json($result);
     }
 }

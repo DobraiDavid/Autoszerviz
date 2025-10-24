@@ -52,7 +52,7 @@
                 <tr class="hover:bg-gray-50 transition" data-id="{{ $client->id }}">
                     <td class="px-4 py-2">{{ $client->id }}</td>
                     <td class="px-4 py-2 text-indigo-600 cursor-pointer font-medium client-name hover:underline">{{ $client->name }}</td>
-                    <td class="px-4 py-2">{{ $client->card_number }}</td>
+                    <td class="px-4 py-2 client-card">{{ $client->card_number }}</td>
                 </tr>
                 <tr class="cars-row hidden" data-client="{{ $client->id }}">
                     <td colspan="3" class="p-0">
